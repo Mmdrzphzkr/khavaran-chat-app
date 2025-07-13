@@ -13,21 +13,24 @@ export async function GET(req) {
 
     const userId = session.user.id;
     const searchParams = req.nextUrl.searchParams;
-    const chatId = searchParams.get("chatId") || "";
     const query = searchParams.get("query") || "";
 
-    const messages = await prisma.message.findMany({
+    const contacts = await prisma.contact.findMany({
       where: {
-        chatId: chatId,
-        content: { contains: query.toLowerCase() }, // Convert query to lowercase
+        userId: userId,
+        OR: [
+          { firstName: { contains: query.toLowerCase() } },
+          { lastName: { contains: query.toLowerCase() } },
+          { email: { contains: query.toLowerCase() } },
+        ],
       },
     });
 
-    return NextResponse.json(messages);
+    return NextResponse.json(contacts);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Failed to fetch messages" },
+      { error: "Failed to fetch contacts" },
       { status: 500 }
     );
   }
@@ -43,22 +46,23 @@ export async function POST(req) {
 
     const userId = session.user.id;
     const body = await req.json();
-    const { chatId, content, isFile } = body;
+    const { firstName, lastName, phone, email } = body;
 
-    const newMessage = await prisma.message.create({
+    const newContact = await prisma.contact.create({
       data: {
-        content,
-        chatId,
-        senderId: userId,
-        isFile: isFile || false, // Store the isFile flag
+        firstName,
+        lastName,
+        phone,
+        email,
+        userId,
       },
     });
 
-    return NextResponse.json(newMessage, { status: 201 });
+    return NextResponse.json(newContact, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Failed to create message" },
+      { error: "Failed to create contact" },
       { status: 500 }
     );
   }

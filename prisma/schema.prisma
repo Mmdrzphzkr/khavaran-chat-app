@@ -75,6 +75,7 @@ model Message {
   sender    User     @relation("MessageSender", fields: [senderId], references: [id])
   chatId    String
   chat      Chat     @relation(fields: [chatId], references: [id])
+  isFile    Boolean  @default(false) // Track if the message is a file
 }
 
 model Chat {
