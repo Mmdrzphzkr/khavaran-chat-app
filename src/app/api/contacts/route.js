@@ -11,13 +11,13 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const currentUserId = session.user.id;
     const searchParams = req.nextUrl.searchParams;
     const query = searchParams.get("query") || "";
 
     const contacts = await prisma.contact.findMany({
       where: {
-        userId: userId,
+        addedById: currentUserId, // Filter by the user who added the contact
         OR: [
           { firstName: { contains: query.toLowerCase() } },
           { lastName: { contains: query.toLowerCase() } },
@@ -44,17 +44,33 @@ export async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const currentUserId = session.user.id;
     const body = await req.json();
     const { firstName, lastName, phone, email } = body;
 
+    // First, check if a user with the provided email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json(
+        { error: "User with this email does not exist" },
+        { status: 404 }
+      );
+    }
+
+    // If user exists, connect to their account and add current user as addedBy
     const newContact = await prisma.contact.create({
       data: {
         firstName,
         lastName,
         phone,
         email,
-        userId,
+        userId: existingUser.id,
+        addedById: currentUserId, // Save the ID of the user who is adding the contact
       },
     });
 

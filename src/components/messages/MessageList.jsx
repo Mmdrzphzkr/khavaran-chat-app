@@ -1,25 +1,41 @@
-// src/components/messages/MessageList.jsx
-'use client';
-
-import { useState, useEffect } from 'react';
-import MessageItem from './MessageItem';
+import { useEffect, useState } from "react";
+import MessageItem from "./MessageItem";
+import { socket } from "@/lib/socket";
 
 const MessageList = ({ chatId }) => {
   const [messages, setMessages] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    console.log("MessageList useEffect triggered. ChatId:", chatId, "SearchQuery:", searchQuery); // ADD THIS LINE
-
     const fetchMessages = async () => {
-      // Implement API endpoint and call here
-      const response = await fetch(`/api/messages?chatId=${chatId}&query=${searchQuery}`);
-      const data = await response.json();
-      setMessages(data);
+      try {
+        const response = await fetch(
+          `/api/messages?chatId=${chatId}&query=${searchQuery}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setMessages(data);
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+      }
     };
 
     fetchMessages();
   }, [chatId, searchQuery]);
+
+  useEffect(() => {
+    socket.on("receive-message", (newMessage) => {
+      if (newMessage.chatId === chatId) {
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      }
+    });
+
+    return () => {
+      socket.off("receive-message");
+    };
+  }, [chatId]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -35,7 +51,9 @@ const MessageList = ({ chatId }) => {
       />
       <ul>
         {messages.map((message) => (
-          <MessageItem key={message.id} message={message} />
+          <li key={message.id}>
+            <MessageItem message={message} />
+          </li>
         ))}
       </ul>
     </div>
@@ -43,4 +61,3 @@ const MessageList = ({ chatId }) => {
 };
 
 export default MessageList;
-

@@ -1,8 +1,8 @@
 // src/components/contacts/ContactList.jsx
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 const ContactList = ({ searchQuery, onSelectChat, contacts }) => {
   const [loading, setLoading] = useState(true);
@@ -12,9 +12,9 @@ const ContactList = ({ searchQuery, onSelectChat, contacts }) => {
   const [localContacts, setLocalContacts] = useState(contacts);
 
   useEffect(() => {
-      setLoading(true);
-      setError(null);
-      const fetchContacts = async () => {
+    setLoading(true);
+    setError(null);
+    const fetchContacts = async () => {
       try {
         const response = await fetch(`/api/contacts?query=${searchQuery}`);
         if (!response.ok) {
@@ -23,8 +23,8 @@ const ContactList = ({ searchQuery, onSelectChat, contacts }) => {
         const data = await response.json();
         setLocalContacts(data);
       } catch (error) {
-        console.error('Failed to fetch contacts:', error);
-        setError('Failed to fetch contacts. Please try again.');
+        console.error("Failed to fetch contacts:", error);
+        setError("Failed to fetch contacts. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -35,10 +35,10 @@ const ContactList = ({ searchQuery, onSelectChat, contacts }) => {
 
   const handleContactClick = async (contactId) => {
     try {
-      const response = await fetch('/api/chats', {
-        method: 'POST',
+      const response = await fetch("/api/chats", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ contactId: contactId }),
       });
@@ -50,15 +50,15 @@ const ContactList = ({ searchQuery, onSelectChat, contacts }) => {
       const data = await response.json();
       onSelectChat(data.chatId);
     } catch (error) {
-      console.error('Error getting or creating chat:', error);
-      setError('Failed to start chat. Please try again.');
+      console.error("Error getting or creating chat:", error);
+      setError("Failed to start chat. Please try again.");
     }
   };
 
   const handleDeleteContact = async (contactId) => {
     try {
       const response = await fetch(`/api/contacts/${contactId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
@@ -69,13 +69,15 @@ const ContactList = ({ searchQuery, onSelectChat, contacts }) => {
         prevContacts.filter((contact) => contact.id !== contactId)
       );
     } catch (error) {
-      console.error('Failed to delete contact:', error);
-      setError('Failed to delete contact. Please try again.');
+      console.error("Failed to delete contact:", error);
+      setError("Failed to delete contact. Please try again.");
     }
   };
 
   if (loading) {
-    return <p className="text-gray-700 dark:text-gray-300">Loading contacts...</p>;
+    return (
+      <p className="text-gray-700 dark:text-gray-300">Loading contacts...</p>
+    );
   }
 
   if (error) {

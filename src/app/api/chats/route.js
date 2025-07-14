@@ -52,27 +52,35 @@ export async function POST(req) {
     const existingChat = await prisma.chat.findFirst({
       where: {
         isGroup: false,
-        users: {
-          every: {
-            OR: [{ id: currentUserId }, { id: otherUserId }],
+        AND: [
+          {
+            users: {
+              some: { id: currentUserId },
+            },
           },
-        },
+          {
+            users: {
+              some: { id: otherUserId },
+            },
+          },
+        ],
       },
       include: {
-        users: true,
+        users: true, // Include users to check the count
       },
     });
 
     console.log("Existing Chat:", existingChat);
 
-    if (existingChat) {
-      // Chat exists, return the chatId
+    // Ensure the chat has exactly two users
+    if (existingChat && existingChat.users.length === 2) {
+      // Chat exists with exactly the two users, return the chatId
       return NextResponse.json({ chatId: existingChat.id });
     } else {
-      // Chat doesn't exist, create a new one
+      // Chat doesn't exist or has incorrect number of users, create a new one
       const newChat = await prisma.chat.create({
         data: {
-          isGroup: false, // Assuming it's a 1-on-1 chat
+          isGroup: false, // 1-on-1 chat
           users: {
             connect: [{ id: currentUserId }, { id: otherUserId }],
           },

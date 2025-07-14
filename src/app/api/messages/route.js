@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { socket } from "@/lib/socket";
 
 export async function GET(req) {
   try {
@@ -19,7 +20,7 @@ export async function GET(req) {
     const messages = await prisma.message.findMany({
       where: {
         chatId: chatId,
-        content: { contains: query.toLowerCase() }, // Convert query to lowercase
+        content: { contains: query.toLowerCase() },
       },
     });
 
@@ -53,6 +54,9 @@ export async function POST(req) {
         isFile: isFile || false, // Store the isFile flag
       },
     });
+
+    // Emit the 'receive-message' event to all connected clients
+    socket.emit("receive-message", newMessage);
 
     return NextResponse.json(newMessage, { status: 201 });
   } catch (error) {

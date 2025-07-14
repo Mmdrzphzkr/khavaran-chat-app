@@ -20,7 +20,8 @@ model User {
   accounts      Account[]
   sentMessages  Message[] @relation("MessageSender")
   chats         Chat[]    @relation("ChatUsers")
-  contacts      Contact[] // Added Contact relation
+  contacts      Contact[] @relation("ContactUser") // Added back relation
+  addedContacts Contact[] @relation("AddedByContact") // Added back relation
 }
 
 model Contact {
@@ -30,7 +31,9 @@ model Contact {
   phone     String?
   email     String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(name: "ContactUser", fields: [userId], references: [id])
+  addedById String
+  addedBy   User     @relation(name: "AddedByContact", fields: [addedById], references: [id])
 }
 
 model Account {

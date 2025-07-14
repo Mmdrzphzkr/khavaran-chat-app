@@ -1,8 +1,7 @@
 // src/components/messages/MessageItem.jsx
 const MessageItem = ({ message }) => {
-  console.log("message", message);
   return (
-    <li>
+    <div>
       {message.isFile ? (
         <a
           href={message.content.match(/\((.*?)\)/)[1]}
@@ -15,9 +14,8 @@ const MessageItem = ({ message }) => {
         message.content
       )}
       - {message.senderId} - {message.createdAt}
-    </li>
+    </div>
   );
 };
 
 export default MessageItem;
-
