@@ -1,4 +1,3 @@
-// src/app/page.jsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -7,6 +6,7 @@ import MessageList from "@/components/messages/MessageList";
 import MessageInput from "@/components/messages/MessageInput";
 import ContactPanel from "@/components/contacts/ContactPanel";
 import { socket } from "@/lib/socket";
+import Link from "next/link";
 
 export default function ChatPage() {
   const { data: session } = useSession();
@@ -41,7 +41,6 @@ export default function ChatPage() {
     };
   }, [session]);
 
-  // Join chat room when selectedChatId changes
   useEffect(() => {
     if (selectedChatId) {
       socketRef.current.emit("join-chat", selectedChatId);
@@ -50,6 +49,10 @@ export default function ChatPage() {
 
   const handleSelectChat = (chatId) => {
     setSelectedChatId(chatId);
+  };
+
+  const getAvatarUrl = (url) => {
+    return url && url.trim() !== "" ? `${url}?cb=${Date.now()}` : "/no-profile.png";
   };
 
   if (!session) {
@@ -73,6 +76,23 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <aside className="w-80 border-r border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex items-center space-x-2 mb-4">
+          <img
+            src={getAvatarUrl(session.user.image)}
+            alt="User"
+            className="w-10 h-10 rounded-full object-cover"
+          />
+          <div className="text-gray-800 dark:text-gray-100">
+            <div className="font-medium">{session.user.name || "Unnamed"}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">You</div>
+          </div>
+        </div>
+        <Link
+          href="/profile"
+          className="my-1 text-center inline-block w-full p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Profile
+        </Link>
         <ContactPanel onSelectChat={handleSelectChat} />
       </aside>
       <div className="flex-1 flex flex-col">

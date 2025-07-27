@@ -1,3 +1,4 @@
+// // src/app/api/contacts/route.js
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -23,6 +24,15 @@ export async function GET(req) {
           { lastName: { contains: query.toLowerCase() } },
           { email: { contains: query.toLowerCase() } },
         ],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            image: true,
+            name: true,
+          },
+        },
       },
     });
 

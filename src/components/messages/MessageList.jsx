@@ -12,13 +12,11 @@ const MessageList = ({ chatId }) => {
         const response = await fetch(
           `/api/messages?chatId=${chatId}&query=${searchQuery}`
         );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error("Failed to fetch messages");
         const data = await response.json();
         setMessages(data);
       } catch (error) {
-        console.error("Failed to fetch messages:", error);
+        console.error("Message fetch error:", error);
       }
     };
 
@@ -28,28 +26,24 @@ const MessageList = ({ chatId }) => {
   useEffect(() => {
     socket.on("receive-message", (newMessage) => {
       if (newMessage.chatId === chatId) {
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setMessages((prev) => [...prev, newMessage]);
       }
     });
-
     return () => {
       socket.off("receive-message");
     };
   }, [chatId]);
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
   return (
     <div>
       <input
         type="text"
-        placeholder="Search messages"
+        placeholder="Search messages..."
+        className="mb-2 p-2 w-full rounded border dark:bg-gray-700 dark:text-white"
         value={searchQuery}
-        onChange={handleSearch}
+        onChange={(e) => setSearchQuery(e.target.value)}
       />
-      <ul>
+      <ul className="space-y-2">
         {messages.map((message) => (
           <li key={message.id}>
             <MessageItem message={message} />

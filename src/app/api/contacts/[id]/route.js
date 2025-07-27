@@ -16,21 +16,28 @@ export async function PUT(req, { params }) {
     const body = await req.json();
     const { firstName, lastName, phone, email } = body;
 
+    console.log("🔧 PUT /contacts/[id]", {
+      contactId,
+      userId,
+      body,
+    });
+
     const existingContact = await prisma.contact.findUnique({
       where: {
         id: contactId,
-        userId: userId,
+        addedById: userId, // ✅ Ensure only contacts added by the user are editable
       },
     });
 
     if (!existingContact) {
+      console.warn("⚠️ Contact not found or unauthorized:", contactId);
       return NextResponse.json({ error: "Contact not found" }, { status: 404 });
     }
 
     const updatedContact = await prisma.contact.update({
       where: {
         id: contactId,
-        userId: userId,
+        addedById: userId,
       },
       data: {
         firstName,
@@ -40,50 +47,12 @@ export async function PUT(req, { params }) {
       },
     });
 
+    console.log("✅ Contact updated:", updatedContact.id);
     return NextResponse.json(updatedContact);
   } catch (error) {
-    console.error(error);
+    console.error("❌ PUT /contacts/[id] failed:", error);
     return NextResponse.json(
       { error: "Failed to update contact" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(req, { params }) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id;
-    const contactId = params.id;
-
-    const existingContact = await prisma.contact.findUnique({
-      where: {
-        id: contactId,
-        userId: userId,
-      },
-    });
-
-    if (!existingContact) {
-      return NextResponse.json({ error: "Contact not found" }, { status: 404 });
-    }
-
-    await prisma.contact.delete({
-      where: {
-        id: contactId,
-        userId: userId,
-      },
-    });
-
-    return NextResponse.json({ message: "Contact deleted" });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Failed to delete contact" },
       { status: 500 }
     );
   }

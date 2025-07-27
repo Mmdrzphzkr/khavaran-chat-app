@@ -1,4 +1,4 @@
-// src/app/(auth)/register/route.jsx
+// src/app/auth/register/page.jsx
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";

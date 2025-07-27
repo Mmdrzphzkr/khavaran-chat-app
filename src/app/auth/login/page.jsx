@@ -1,3 +1,4 @@
+// src/app/auth/login/page.jsx
 'use client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'

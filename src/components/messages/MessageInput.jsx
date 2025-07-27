@@ -1,4 +1,3 @@
-// src/components/messages/MessageInput.jsx
 "use client";
 
 import { useState } from "react";
@@ -26,7 +25,6 @@ const MessageInput = ({ chatId }) => {
       let isFile = false;
 
       if (file) {
-        // Upload the file
         const formData = new FormData();
         formData.append("file", file);
 
@@ -35,18 +33,13 @@ const MessageInput = ({ chatId }) => {
           body: formData,
         });
 
-        if (!uploadResponse.ok) {
-          console.error("File upload failed");
-          setLoading(false);
-          return;
-        }
-
         const { url, fileName } = await uploadResponse.json();
+        console.log("Upload returned:", { url, fileName });
+
         messageContent = `📁 [${fileName}](${url})`;
         isFile = true;
       }
 
-      // Create message object
       const message = {
         chatId,
         content: messageContent,
@@ -54,15 +47,11 @@ const MessageInput = ({ chatId }) => {
         isFile,
       };
 
-      // Emit message to Socket.IO server
       socket.emit("send-message", message);
 
-      // Save message to database via API
       const response = await fetch("/api/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(message),
       });
 

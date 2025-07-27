@@ -8,32 +8,35 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  sentMessages  Message[] @relation("MessageSender")
-  chats         Chat[]    @relation("ChatUsers")
-  contacts      Contact[] @relation("ContactUser") // Added back relation
-  addedContacts Contact[] @relation("AddedByContact") // Added back relation
+  id               String         @id @default(cuid())
+  name             String?
+  email            String         @unique
+  emailVerified    DateTime?
+  password         String
+  image            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  sentMessages     Message[]      @relation("MessageSender")
+  chats            Chat[]         @relation("ChatUsers")
+  contacts         Contact[]      @relation("ContactUser")
+  addedContacts    Contact[]      @relation("AddedByContact")
+  adminGroups      Group[]        @relation("AdminGroups")
+  groupMessages    GroupMessage[] @relation("GroupMessages")
+  groupMemberships GroupMember[]
 }
 
 model Contact {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   firstName String
   lastName  String?
   phone     String?
   email     String?
   userId    String
-  user      User     @relation(name: "ContactUser", fields: [userId], references: [id])
+  user      User    @relation(name: "ContactUser", fields: [userId], references: [id])
   addedById String
-  addedBy   User     @relation(name: "AddedByContact", fields: [addedById], references: [id])
+  addedBy   User    @relation(name: "AddedByContact", fields: [addedById], references: [id])
 }
 
 model Account {
@@ -88,4 +91,34 @@ model Chat {
   createdAt DateTime  @default(now())
   messages  Message[]
   users     User[]    @relation("ChatUsers")
+}
+
+model Group {
+  id        String         @id @default(cuid())
+  name      String
+  image     String?
+  adminId   String
+  admin     User           @relation("AdminGroups", fields: [adminId], references: [id])
+  members   GroupMember[]
+  messages  GroupMessage[]
+  createdAt DateTime       @default(now())
+}
+
+model GroupMember {
+  id      String @id @default(cuid())
+  groupId String
+  userId  String
+  group   Group  @relation(fields: [groupId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+}
+
+model GroupMessage {
+  id        String   @id @default(cuid())
+  groupId   String
+  senderId  String
+  content   String
+  isFile    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id])
+  sender    User     @relation("GroupMessages", fields: [senderId], references: [id])
 }

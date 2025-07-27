@@ -15,5 +15,8 @@ export async function POST(req) {
   const path = `./public/uploads/${file.name}`;
   await writeFile(path, buffer);
 
-  return NextResponse.json({ url: `/uploads/${file.name}` });
+  return NextResponse.json({
+    url: `/uploads/${file.name}`,
+    fileName: file.name, // ✅ Return the file name
+  });
 }
