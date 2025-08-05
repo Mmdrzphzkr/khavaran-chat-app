@@ -14,14 +14,16 @@ const EditGroupForm = ({ group, onGroupUpdated, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState([]);
 
-  // Fetch the initial list of members when the form opens
+  // ✅ Fetch the initial list of members when the form opens
   useEffect(() => {
-    const fetchMembers = async () => {
+    const fetchGroupDetails = async () => {
       const res = await fetch(`/api/groups/${group.id}`);
-      const data = await res.json();
-      setMembers(data.members);
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data.members);
+      }
     };
-    fetchMembers();
+    fetchGroupDetails();
   }, [group.id]);
 
   const getAvatarUrl = (url) => {
@@ -55,18 +57,15 @@ const EditGroupForm = ({ group, onGroupUpdated, onCancel }) => {
 
     if (res.ok) {
       const updatedGroup = await res.json();
-      // Pass the complete updated group object up to the parent
-      onGroupUpdated({ ...group, ...updatedGroup, members });
+      onGroupUpdated({ ...updatedGroup, members });
     }
     setLoading(false);
   };
 
-  // State handler to add a new member to the list instantly
   const handleMemberAdded = (newMember) => {
     setMembers((prev) => [...prev, newMember]);
   };
 
-  // State handler to remove a member from the list instantly
   const handleMemberRemoved = (removedUserId) => {
     setMembers((prev) => prev.filter((m) => m.userId !== removedUserId));
   };

@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { socket } from "@/lib/socket";
 
 export async function POST(req) {
   try {
@@ -20,18 +19,12 @@ export async function POST(req) {
         isFile,
         senderId: session.user.id,
       },
-      // ✅ This is the critical addition
       include: {
         sender: true,
       },
     });
 
-    // The server-side socket was missing. Let's re-add it.
-    // NOTE: This assumes you have a running socket server that this API can access.
-    // If your socket server is separate, this emit should happen there.
-    // For now, let's assume direct access for simplicity.
-    io.to(groupId).emit("receive-group-message", newMessage);
-
+    // The socket emit is now handled on the client side
     return NextResponse.json(newMessage, { status: 201 });
   } catch (error) {
     console.error("Error creating group message:", error);
@@ -42,7 +35,6 @@ export async function POST(req) {
   }
 }
 
-// ... GET function remains the same
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);

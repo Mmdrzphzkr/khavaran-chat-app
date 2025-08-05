@@ -1,7 +1,7 @@
 // src/components/messages/ChatMessageItem.jsx
 import React from "react";
 
-const ChatMessageItem = ({ message, currentUserId }) => {
+const ChatMessageItem = ({ key, message, currentUserId }) => {
   const isSender = message.senderId === currentUserId;
 
   const getAvatarUrl = (url) => {
@@ -33,6 +33,7 @@ const ChatMessageItem = ({ message, currentUserId }) => {
 
   return (
     <div
+      key={key}
       className={`flex items-start gap-2.5 ${isSender ? "justify-end" : ""}`}
     >
       {!isSender && (

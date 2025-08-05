@@ -36,18 +36,27 @@ const GroupMessageInput = ({ groupId }) => {
         isFile = true;
       }
 
-      const message = {
+      const messagePayload = {
         groupId,
         content: messageContent,
         isFile,
       };
 
-      // Send via HTTP API to persist
-      await fetch("/api/group-messages", {
+      // 1. Send via HTTP API to persist and get the full message object back
+      const response = await fetch("/api/group-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
+        body: JSON.stringify(messagePayload),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const newMessage = await response.json();
+
+      // 2. Emit the complete message object through the socket
+      socket.emit("send-group-message", newMessage);
 
       setContent("");
       setFile(null);
