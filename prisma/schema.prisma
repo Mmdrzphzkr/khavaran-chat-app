@@ -110,6 +110,7 @@ model GroupMember {
   userId  String
   group   Group  @relation(fields: [groupId], references: [id])
   user    User   @relation(fields: [userId], references: [id])
+  @@unique([groupId, userId])
 }
 
 model GroupMessage {

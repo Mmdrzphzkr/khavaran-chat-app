@@ -13,7 +13,6 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
     const searchParams = req.nextUrl.searchParams;
     const chatId = searchParams.get("chatId") || "";
     const query = searchParams.get("query") || "";
@@ -22,6 +21,12 @@ export async function GET(req) {
       where: {
         chatId: chatId,
         content: { contains: query.toLowerCase() },
+      },
+      include: {
+        sender: true, // ✅ Include sender details
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
 
@@ -52,7 +57,10 @@ export async function POST(req) {
         content,
         chatId,
         senderId: userId,
-        isFile: isFile || false, // Store the isFile flag
+        isFile: isFile || false,
+      },
+      include: {
+        sender: true, // ✅ Include sender details on creation
       },
     });
 

@@ -1,13 +1,19 @@
-import { useEffect, useState } from "react";
-import MessageItem from "./MessageItem";
+// src/components/messages/MessageList.jsx
+"use client";
+import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import ChatMessageItem from "./ChatMessageItem";
 import { socket } from "@/lib/socket";
 
 const MessageList = ({ chatId }) => {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState([]);
+  const messagesEndRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchMessages = async () => {
+      if (!chatId) return;
       try {
         const response = await fetch(
           `/api/messages?chatId=${chatId}&query=${searchQuery}`
@@ -24,32 +30,42 @@ const MessageList = ({ chatId }) => {
   }, [chatId, searchQuery]);
 
   useEffect(() => {
-    socket.on("receive-message", (newMessage) => {
+    const handleNewMessage = (newMessage) => {
       if (newMessage.chatId === chatId) {
         setMessages((prev) => [...prev, newMessage]);
       }
-    });
+    };
+
+    socket.on("receive-message", handleNewMessage);
+
     return () => {
-      socket.off("receive-message");
+      socket.off("receive-message", handleNewMessage);
     };
   }, [chatId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <div>
       <input
         type="text"
         placeholder="Search messages..."
-        className="mb-2 p-2 w-full rounded border dark:bg-gray-700 dark:text-white"
+        className="mb-2 p-2 w-full rounded border dark:bg-gray-700"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      <ul className="space-y-2">
+      <div className="space-y-4">
         {messages.map((message) => (
-          <li key={message.id}>
-            <MessageItem message={message} />
-          </li>
+          <ChatMessageItem
+            key={message.id}
+            message={message}
+            currentUserId={session.user.id}
+          />
         ))}
-      </ul>
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   );
 };
