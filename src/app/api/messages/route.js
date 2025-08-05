@@ -59,13 +59,14 @@ export async function POST(req) {
         senderId: userId,
         isFile: isFile || false,
       },
+      // ✅ This ensures the sender's name and image are included
       include: {
-        sender: true, // ✅ Include sender details on creation
+        sender: true,
       },
     });
 
-    // Emit the 'receive-message' event to all connected clients
-    socket.emit("receive-message", newMessage);
+    // NOTE: The socket emit for private messages should be on the client
+    // to ensure consistency with the group chat fix.
 
     return NextResponse.json(newMessage, { status: 201 });
   } catch (error) {

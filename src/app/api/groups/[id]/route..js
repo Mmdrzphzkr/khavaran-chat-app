@@ -13,7 +13,6 @@ export async function GET(req, { params }) {
 
     const group = await prisma.group.findUnique({
       where: { id: params.id },
-      // ✅ Crucially, include the members and their user details
       include: {
         admin: true,
         members: {

@@ -1,3 +1,4 @@
+// src/components/messages/MessageInput.jsx
 "use client";
 
 import { useState } from "react";
@@ -34,8 +35,6 @@ const MessageInput = ({ chatId }) => {
         });
 
         const { url, fileName } = await uploadResponse.json();
-        console.log("Upload returned:", { url, fileName });
-
         messageContent = `📁 [${fileName}](${url})`;
         isFile = true;
       }
@@ -43,12 +42,10 @@ const MessageInput = ({ chatId }) => {
       const message = {
         chatId,
         content: messageContent,
-        senderId: session.user.id,
         isFile,
       };
 
-      socket.emit("send-message", message);
-
+      // 1. Save message and get the full object back from the API
       const response = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,11 +53,16 @@ const MessageInput = ({ chatId }) => {
       });
 
       if (!response.ok) {
-        console.error("Failed to send message");
-      } else {
-        setContent("");
-        setFile(null);
+        throw new Error("Failed to send message");
       }
+
+      const newMessage = await response.json();
+
+      // 2. Emit the complete message object via socket
+      socket.emit("send-message", newMessage);
+
+      setContent("");
+      setFile(null);
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {

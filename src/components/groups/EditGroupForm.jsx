@@ -14,14 +14,25 @@ const EditGroupForm = ({ group, onGroupUpdated, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState([]);
 
-  // ✅ Fetch the initial list of members when the form opens
   useEffect(() => {
     const fetchGroupDetails = async () => {
-      const res = await fetch(`/api/groups/${group.id}`);
+      if (!group.id) return;
+      setLoading(true);
+      // ✅ Use the new static route
+      const res = await fetch(`/api/groups/details`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId: group.id }),
+      });
+
       if (res.ok) {
         const data = await res.json();
-        setMembers(data.members);
+        setMembers(data.members || []);
+      } else {
+        console.error("Failed to fetch group members");
+        setMembers([]);
       }
+      setLoading(false);
     };
     fetchGroupDetails();
   }, [group.id]);
@@ -105,6 +116,8 @@ const EditGroupForm = ({ group, onGroupUpdated, onCancel }) => {
         </form>
 
         <hr className="my-6 border-gray-300 dark:border-gray-600" />
+
+        <h3 className="text-xl font-bold mb-4">Manage Members</h3>
 
         <GroupMemberList
           members={members}
